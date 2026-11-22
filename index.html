@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="tr" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pulse — Yapay Zekâ Destekli İş Analitiği</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { void:'#07070d', panel:'#0e0e18', edge:'#1d1d2e', violet:'#7c5cff', cyan:'#22d3ee', pink:'#f472b6' },
+  fontFamily: { sans:['Sora','sans-serif'], mono:['"JetBrains Mono"','monospace'] }
+}}}
+</script>
+<style>
+  body{background:#07070d;color:#e7e7f0;-webkit-font-smoothing:antialiased}
+  ::selection{background:#7c5cff;color:#fff}
+  .glow-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+  .mesh{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5}
+  .grad-text{background:linear-gradient(100deg,#a78bfa,#22d3ee 55%,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.08)}
+  .card:hover{border-color:rgba(124,92,255,.45)}
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s cubic-bezier(.16,.8,.24,1)}
+  .reveal.in{opacity:1;transform:none}
+  .grid-fade{background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse 70% 60% at 50% 0%,#000 30%,transparent 75%)}
+  .tabpanel{display:none}
+  .tabpanel.active{display:block;animation:fade .45s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .floaty{animation:float 6s ease-in-out infinite}
+  .bar{transform-origin:bottom;animation:grow 1.2s cubic-bezier(.16,.8,.24,1) both}
+  @keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+  .dash-line{stroke-dasharray:600;stroke-dashoffset:600;animation:draw 2.2s cubic-bezier(.16,.8,.24,1) .3s forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+</style>
+</head>
+<body class="font-sans">
+
+<!-- NAV -->
+<header class="fixed inset-x-0 top-0 z-50">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 pt-4">
+    <div class="flex items-center justify-between rounded-2xl border border-white/10 bg-void/70 px-3 py-2.5 backdrop-blur-xl sm:px-4">
+      <a href="#top" class="flex items-center gap-2">
+        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet to-cyan"><i data-lucide="activity" class="h-4 w-4 text-white"></i></span>
+        <span class="text-lg font-semibold tracking-tight">Pulse</span>
+      </a>
+      <nav class="hidden items-center gap-1 text-sm text-white/60 md:flex">
+        <a href="#features" class="rounded-lg px-3 py-2 transition hover:bg-white/5 hover:text-white">Özellikler</a>
+        <a href="#pricing" class="rounded-lg px-3 py-2 transition hover:bg-white/5 hover:text-white">Fiyatlandırma</a>
+        <a href="#preview" class="rounded-lg px-3 py-2 transition hover:bg-white/5 hover:text-white">Dashboard</a>
+        <a href="#faq" class="rounded-lg px-3 py-2 transition hover:bg-white/5 hover:text-white">S.S.S</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <a href="#" class="hidden px-3 py-2 text-sm text-white/70 hover:text-white sm:block">Giriş</a>
+        <a href="#cta" class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-void transition hover:bg-white/90">Ücretsiz başla</a>
+        <button id="mBtn" class="md:hidden text-white/80"><i data-lucide="menu" class="h-5 w-5"></i></button>
+      </div>
+    </div>
+    <div id="mMenu" class="mt-2 hidden rounded-2xl border border-white/10 bg-void/95 p-2 backdrop-blur-xl md:hidden">
+      <a href="#features" class="block rounded-lg px-3 py-2.5 text-sm text-white/70">Özellikler</a>
+      <a href="#pricing" class="block rounded-lg px-3 py-2.5 text-sm text-white/70">Fiyatlandırma</a>
+      <a href="#preview" class="block rounded-lg px-3 py-2.5 text-sm text-white/70">Dashboard</a>
+      <a href="#cta" class="block rounded-lg px-3 py-2.5 text-sm text-white/70">Ücretsiz başla</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section id="top" class="relative overflow-hidden pt-32 pb-16 sm:pt-40 lg:pb-24">
+  <div class="glow-bg">
+    <div class="mesh left-1/2 top-[-6rem] h-[26rem] w-[40rem] -translate-x-1/2 bg-violet/50"></div>
+    <div class="mesh left-[10%] top-[8rem] h-72 w-72 bg-cyan/30"></div>
+    <div class="mesh right-[8%] top-[4rem] h-72 w-72 bg-pink/25"></div>
+  </div>
+  <div class="grid-fade pointer-events-none absolute inset-0"></div>
+  <div class="relative mx-auto max-w-6xl px-4 sm:px-6 text-center">
+    <a href="#features" class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs text-white/70 backdrop-blur transition hover:border-violet/40">
+      <span class="h-1.5 w-1.5 rounded-full bg-cyan animate-pulse"></span>Pulse 3.0 · AI rapor asistanı yayında
+      <i data-lucide="chevron-right" class="h-3.5 w-3.5"></i>
+    </a>
+    <h1 class="mx-auto mt-7 max-w-4xl text-5xl font-bold leading-[1.03] tracking-tight sm:text-6xl lg:text-7xl">
+      Ekibinizin nabzını<br><span class="grad-text">tek ekranda</span> tutun.
+    </h1>
+    <p class="mx-auto mt-6 max-w-xl text-base leading-relaxed text-white/55 sm:text-lg">
+      İş takibi, analitik ve yapay zekâ raporları tek platformda. Pulse, dağınık araçları bırakıp gerçek işe odaklanmanızı sağlar.
+    </p>
+    <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+      <a href="#cta" class="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-3.5 text-sm font-semibold text-void transition hover:bg-white/90 sm:w-auto">14 gün ücretsiz <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+      <a href="#preview" class="flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-6 py-3.5 text-sm font-medium text-white transition hover:bg-white/10 sm:w-auto"><i data-lucide="play" class="h-4 w-4"></i>Demo izle</a>
+    </div>
+    <p class="mt-4 font-mono text-[11px] uppercase tracking-widest text-white/35">Kredi kartı gerekmez · Kurulum 2 dakika</p>
+
+    <!-- dashboard mock -->
+    <div class="floaty relative mx-auto mt-16 max-w-4xl">
+      <div class="absolute -inset-x-10 -top-6 h-24 bg-violet/20 blur-3xl"></div>
+      <div class="card relative overflow-hidden rounded-2xl shadow-2xl shadow-violet/10">
+        <div class="flex items-center gap-2 border-b border-white/10 px-4 py-3">
+          <span class="h-2.5 w-2.5 rounded-full bg-[#ff5f57]"></span><span class="h-2.5 w-2.5 rounded-full bg-[#febc2e]"></span><span class="h-2.5 w-2.5 rounded-full bg-[#28c840]"></span>
+          <div class="ml-3 flex-1 rounded-md bg-white/5 px-3 py-1 font-mono text-[10px] text-white/40">app.pulse.io/dashboard</div>
+        </div>
+        <div class="grid gap-4 p-4 sm:grid-cols-3 sm:p-5">
+          <div class="space-y-4 sm:col-span-2">
+            <div class="grid grid-cols-3 gap-3">
+              <div class="rounded-xl border border-white/10 bg-white/[.03] p-3 text-left"><p class="font-mono text-[9px] uppercase tracking-wider text-white/40">Aktif görev</p><p class="mt-1 text-xl font-semibold" data-count="1284">0</p><p class="text-[10px] text-cyan">+12%</p></div>
+              <div class="rounded-xl border border-white/10 bg-white/[.03] p-3 text-left"><p class="font-mono text-[9px] uppercase tracking-wider text-white/40">Tamamlanan</p><p class="mt-1 text-xl font-semibold" data-count="968">0</p><p class="text-[10px] text-cyan">+8%</p></div>
+              <div class="rounded-xl border border-white/10 bg-white/[.03] p-3 text-left"><p class="font-mono text-[9px] uppercase tracking-wider text-white/40">Geciken</p><p class="mt-1 text-xl font-semibold" data-count="31">0</p><p class="text-[10px] text-pink">-4%</p></div>
+            </div>
+            <div class="rounded-xl border border-white/10 bg-white/[.03] p-4">
+              <div class="mb-3 flex items-center justify-between"><p class="text-xs font-medium text-white/70">Haftalık verimlilik</p><span class="font-mono text-[10px] text-white/35">son 7 gün</span></div>
+              <svg viewBox="0 0 400 110" class="h-28 w-full" preserveAspectRatio="none">
+                <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7c5cff" stop-opacity=".35"/><stop offset="100%" stop-color="#7c5cff" stop-opacity="0"/></linearGradient></defs>
+                <path d="M0,85 C40,70 60,90 90,60 C120,35 150,55 180,40 C210,25 240,50 270,30 C300,15 330,35 360,20 L400,12" fill="none" stroke="#7c5cff" stroke-width="2.5" class="dash-line"/>
+                <path d="M0,95 C40,88 70,80 100,72 C140,62 170,70 200,55 C235,40 260,58 300,45 C330,36 360,48 400,38" fill="none" stroke="#22d3ee" stroke-width="2" opacity=".8" class="dash-line"/>
+              </svg>
+            </div>
+          </div>
+          <div class="rounded-xl border border-white/10 bg-white/[.03] p-4">
+            <p class="text-xs font-medium text-white/70">AI Öneri</p>
+            <div class="mt-3 space-y-2.5">
+              <div class="rounded-lg border border-violet/30 bg-violet/10 p-2.5"><p class="text-[11px] font-medium text-violet">Darboğaz tespit edildi</p><p class="mt-1 text-[10px] leading-relaxed text-white/50">Tasarım ekibi 2 görevde geride. Yeniden atama önerilir.</p></div>
+              <div class="rounded-lg border border-white/10 bg-white/[.03] p-2.5"><p class="text-[11px] font-medium text-cyan">Trend</p><p class="mt-1 text-[10px] leading-relaxed text-white/50">Teslim süresi 3 günden 2.1 güne geriledi.</p></div>
+            </div>
+            <div class="mt-4 flex items-end gap-1.5">
+              <div class="bar h-6 w-full rounded-sm bg-white/10"></div><div class="bar h-9 w-full rounded-sm bg-white/15"></div><div class="bar h-5 w-full rounded-sm bg-white/10"></div><div class="bar h-11 w-full rounded-sm bg-violet/60"></div><div class="bar h-8 w-full rounded-sm bg-white/15"></div><div class="bar h-12 w-full rounded-sm bg-cyan/60"></div><div class="bar h-10 w-full rounded-sm bg-violet/40"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGOS -->
+<section class="border-y border-white/5 py-8">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <p class="text-center font-mono text-[10px] uppercase tracking-[.25em] text-white/30">Bize güvenen ekipler</p>
+    <div class="mt-6 grid grid-cols-2 items-center gap-6 sm:grid-cols-5">
+      <span class="text-center text-lg font-semibold text-white/30">Ledger</span>
+      <span class="text-center text-lg font-semibold text-white/30">Vitalis</span>
+      <span class="text-center text-lg font-semibold text-white/30">Orbit</span>
+      <span class="text-center text-lg font-semibold text-white/30">Northwind</span>
+      <span class="text-center text-lg font-semibold text-white/30">Meridian</span>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES / BENTO + TABS -->
+<section id="features" class="relative py-20 lg:py-28">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div class="max-w-2xl">
+      <p class="font-mono text-[11px] uppercase tracking-[.25em] text-violet">Özellikler</p>
+      <h2 class="mt-3 text-4xl font-bold tracking-tight lg:text-5xl">Dağınık araçlara <span class="grad-text">veda</span>.</h2>
+      <p class="mt-4 text-white/55">Takip, analiz ve raporlama — hepsi aynı veri modelinde, aynı arayüzde.</p>
+    </div>
+
+    <!-- bento -->
+    <div class="mt-12 grid gap-4 lg:grid-cols-3">
+      <div class="card reveal rounded-2xl p-6 lg:col-span-2">
+        <div class="flex items-start justify-between gap-4">
+          <div><div class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet/15 text-violet"><i data-lucide="layout-dashboard" class="h-5 w-5"></i></div>
+          <h3 class="mt-4 text-lg font-semibold">Gerçek zamanlı dashboard</h3>
+          <p class="mt-2 max-w-md text-sm leading-relaxed text-white/50">Tüm projeler, ekipler ve teslim tarihleri tek bakışta. Veriler saniyeler içinde güncellenir, sayfa yenilemeye gerek yok.</p></div>
+        </div>
+        <div class="mt-6 grid grid-cols-4 gap-2">
+          <div class="rounded-lg border border-white/10 bg-white/[.03] p-3"><div class="h-1.5 w-8 rounded bg-violet"></div><p class="mt-3 text-xs text-white/40">Sprint 24</p><p class="text-sm font-medium">82%</p></div>
+          <div class="rounded-lg border border-white/10 bg-white/[.03] p-3"><div class="h-1.5 w-8 rounded bg-cyan"></div><p class="mt-3 text-xs text-white/40">Sprint 25</p><p class="text-sm font-medium">64%</p></div>
+          <div class="rounded-lg border border-white/10 bg-white/[.03] p-3"><div class="h-1.5 w-8 rounded bg-pink"></div><p class="mt-3 text-xs text-white/40">Sprint 26</p><p class="text-sm font-medium">41%</p></div>
+          <div class="rounded-lg border border-white/10 bg-white/[.03] p-3"><div class="h-1.5 w-8 rounded bg-white/30"></div><p class="mt-3 text-xs text-white/40">Sprint 27</p><p class="text-sm font-medium">12%</p></div>
+        </div>
+      </div>
+      <div class="card reveal rounded-2xl p-6">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan/15 text-cyan"><i data-lucide="sparkles" class="h-5 w-5"></i></div>
+        <h3 class="mt-4 text-lg font-semibold">AI rapor asistanı</h3>
+        <p class="mt-2 text-sm leading-relaxed text-white/50">"Bu hafta neye odaklanmalıyız?" sorusuna veriye dayalı, Türkçe yanıt.</p>
+        <div class="mt-5 rounded-xl border border-white/10 bg-void/60 p-3 font-mono text-[10px] text-white/45">
+          <p class="text-cyan">&gt; haftalık özet</p>
+          <p class="mt-1.5">Tasarım ekibi %18 daha hızlı. Satışta 3 teklif bekliyor…</p>
+        </div>
+      </div>
+      <div class="card reveal rounded-2xl p-6">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-pink/15 text-pink"><i data-lucide="workflow" class="h-5 w-5"></i></div>
+        <h3 class="mt-4 text-lg font-semibold">Otomasyonlar</h3>
+        <p class="mt-2 text-sm leading-relaxed text-white/50">Tekrarlayan işleri kurala bağlayın. Görev atama ve hatırlatmalar kendiliğinden çalışsın.</p>
+      </div>
+      <div class="card reveal rounded-2xl p-6 lg:col-span-2">
+        <div class="flex flex-col gap-6 sm:flex-row sm:items-center">
+          <div class="flex-1">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet/15 text-violet"><i data-lucide="shield-check" class="h-5 w-5"></i></div>
+            <h3 class="mt-4 text-lg font-semibold">Kurumsal güvenlik</h3>
+            <p class="mt-2 text-sm leading-relaxed text-white/50">SSO, rol bazlı erişim, denetim kaydı ve KVKK uyumlu veri saklama. Veriniz sizin.</p>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-center">
+            <div class="rounded-lg border border-white/10 bg-white/[.03] px-4 py-3"><p class="font-mono text-[9px] uppercase text-white/35">Uptime</p><p class="text-sm font-semibold">99.98%</p></div>
+            <div class="rounded-lg border border-white/10 bg-white/[.03] px-4 py-3"><p class="font-mono text-[9px] uppercase text-white/35">SOC 2</p><p class="text-sm font-semibold">Type II</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- interactive tabs -->
+    <div class="mt-16">
+      <div class="flex flex-wrap gap-2 border-b border-white/10">
+        <button data-tab="t1" class="tab-btn border-b-2 border-violet px-4 py-3 text-sm font-medium text-white">Görev &amp; Proje</button>
+        <button data-tab="t2" class="tab-btn border-b-2 border-transparent px-4 py-3 text-sm font-medium text-white/50 hover:text-white">Analitik</button>
+        <button data-tab="t3" class="tab-btn border-b-2 border-transparent px-4 py-3 text-sm font-medium text-white/50 hover:text-white">Ekip &amp; Yetki</button>
+      </div>
+      <div class="pt-8">
+        <div id="t1" class="tabpanel active grid gap-6 lg:grid-cols-2 lg:items-center">
+          <div>
+            <h3 class="text-2xl font-semibold">Kanban değil, gerçek iş akışı</h3>
+            <p class="mt-3 text-sm leading-relaxed text-white/50">Görevler birbirine bağlı, bağımlılıklar görünür. Bir görev kaydığında etkilediği her şey otomatik işaretlenir.</p>
+            <ul class="mt-5 space-y-2.5 text-sm text-white/60">
+              <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>Görev bağımlılıkları ve kritik yol</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>Alt görev, kontrol listesi, ek dosya</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>Zaman çizelgesi ve otomatik hatırlatma</li>
+            </ul>
+          </div>
+          <div class="card rounded-2xl p-4">
+            <div class="grid grid-cols-3 gap-3">
+              <div class="rounded-lg bg-white/[.03] p-2.5"><p class="mb-2 font-mono text-[9px] uppercase text-white/35">Yapılacak</p><div class="space-y-2"><div class="rounded-md border border-white/10 bg-void/60 p-2 text-[11px] text-white/70">Landing revizyon</div><div class="rounded-md border border-white/10 bg-void/60 p-2 text-[11px] text-white/70">API dokümanı</div></div></div>
+              <div class="rounded-lg bg-white/[.03] p-2.5"><p class="mb-2 font-mono text-[9px] uppercase text-white/35">Devam</p><div class="space-y-2"><div class="rounded-md border border-violet/40 bg-violet/10 p-2 text-[11px] text-white/80">Dashboard UI</div></div></div>
+              <div class="rounded-lg bg-white/[.03] p-2.5"><p class="mb-2 font-mono text-[9px] uppercase text-white/35">Bitti</p><div class="space-y-2"><div class="rounded-md border border-cyan/30 bg-cyan/10 p-2 text-[11px] text-white/80">Onboarding akışı</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div id="t2" class="tabpanel grid gap-6 lg:grid-cols-2 lg:items-center">
+          <div>
+            <h3 class="text-2xl font-semibold">Sadece sayı değil, anlam</h3>
+            <p class="mt-3 text-sm leading-relaxed text-white/50">Her metrik bir soruyu yanıtlar. Dashboard'larınızı sürükle-bırak ile kurun, AI yorumu otomatik eklesin.</p>
+            <ul class="mt-5 space-y-2.5 text-sm text-white/60">
+              <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>Özel metrik ve KPI tanımları</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>Haftalık otomatik özet</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>CSV / API ile dışa aktarım</li>
+            </ul>
+          </div>
+          <div class="card rounded-2xl p-5">
+            <div class="flex items-end gap-2" style="height:140px">
+              <div class="bar h-[40%] w-full rounded-t bg-white/10"></div><div class="bar h-[55%] w-full rounded-t bg-white/15"></div><div class="bar h-[35%] w-full rounded-t bg-white/10"></div><div class="bar h-[70%] w-full rounded-t bg-violet/50"></div><div class="bar h-[50%] w-full rounded-t bg-white/15"></div><div class="bar h-[85%] w-full rounded-t bg-cyan/50"></div><div class="bar h-[65%] w-full rounded-t bg-violet/40"></div><div class="bar h-[95%] w-full rounded-t bg-pink/50"></div>
+            </div>
+            <div class="mt-4 flex justify-between font-mono text-[9px] uppercase text-white/30"><span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span></div>
+          </div>
+        </div>
+        <div id="t3" class="tabpanel grid gap-6 lg:grid-cols-2 lg:items-center">
+          <div>
+            <h3 class="text-2xl font-semibold">Doğru kişi, doğru yetki</h3>
+            <p class="mt-3 text-sm leading-relaxed text-white/50">Rol bazlı erişimle herkes yalnızca ihtiyacı olanı görür. Departmanlar arası atama dakikalar içinde.</p>
+            <ul class="mt-5 space-y-2.5 text-sm text-white/60">
+              <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>Özel roller ve izin setleri</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>Departman bazlı görünürlük</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>Denetim kaydı ve erişim geçmişi</li>
+            </ul>
+          </div>
+          <div class="card rounded-2xl p-4">
+            <div class="space-y-2.5">
+              <div class="flex items-center gap-3 rounded-lg bg-white/[.03] p-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-violet/20 text-xs font-semibold text-violet">AY</span><div class="flex-1"><p class="text-sm">Ayşe Yılmaz</p><p class="text-[10px] text-white/35">Product Lead</p></div><span class="rounded-md bg-violet/15 px-2 py-1 font-mono text-[9px] text-violet">admin</span></div>
+              <div class="flex items-center gap-3 rounded-lg bg-white/[.03] p-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-cyan/20 text-xs font-semibold text-cyan">MK</span><div class="flex-1"><p class="text-sm">Mehmet Kaya</p><p class="text-[10px] text-white/35">Developer</p></div><span class="rounded-md bg-white/10 px-2 py-1 font-mono text-[9px] text-white/50">member</span></div>
+              <div class="flex items-center gap-3 rounded-lg bg-white/[.03] p-3"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-pink/20 text-xs font-semibold text-pink">ZD</span><div class="flex-1"><p class="text-sm">Zeynep Demir</p><p class="text-[10px] text-white/35">Designer</p></div><span class="rounded-md bg-white/10 px-2 py-1 font-mono text-[9px] text-white/50">member</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" class="relative border-t border-white/5 py-20 lg:py-28">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="font-mono text-[11px] uppercase tracking-[.25em] text-cyan">Fiyatlandırma</p>
+      <h2 class="mt-3 text-4xl font-bold tracking-tight lg:text-5xl">Büyüdükçe <span class="grad-text">ölçeklenen</span> fiyat</h2>
+      <p class="mt-4 text-white/55">Aylık veya yıllık — istediğiniz zaman iptal.</p>
+      <div class="mt-8 inline-flex items-center rounded-full border border-white/10 bg-white/5 p-1">
+        <button id="mAylik" onclick="setPeriod('monthly')" class="rounded-full bg-white px-5 py-2 text-sm font-semibold text-void transition">Aylık</button>
+        <button id="mYillik" onclick="setPeriod('yearly')" class="rounded-full px-5 py-2 text-sm font-medium text-white/60 transition hover:text-white">Yıllık <span class="ml-1 font-mono text-[10px] text-cyan">-20%</span></button>
+      </div>
+    </div>
+    <div class="mt-12 grid gap-4 md:grid-cols-3">
+      <!-- starter -->
+      <div class="card reveal flex flex-col rounded-2xl p-7">
+        <p class="font-mono text-[11px] uppercase tracking-widest text-white/40">Starter</p>
+        <p class="mt-4 text-4xl font-bold"><span class="price" data-m="0" data-y="0">₺0</span><span class="text-sm font-normal text-white/40">/ay</span></p>
+        <p class="mt-1 text-xs text-white/40">3 kişiye kadar · sonsuza dek ücretsiz</p>
+        <ul class="mt-6 flex-1 space-y-3 text-sm text-white/60">
+          <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>5 proje</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>3 kullanıcı</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>Temel dashboard</li>
+          <li class="flex items-center gap-2 text-white/30"><i data-lucide="x" class="h-4 w-4"></i>AI raporları</li>
+        </ul>
+        <button class="mt-6 w-full rounded-xl border border-white/15 py-3 text-sm font-medium transition hover:bg-white/5">Ücretsiz başla</button>
+      </div>
+      <!-- pro -->
+      <div class="relative flex flex-col overflow-hidden rounded-2xl p-7" style="background:linear-gradient(180deg,rgba(124,92,255,.18),rgba(34,211,238,.06));border:1px solid rgba(124,92,255,.45)">
+        <span class="absolute right-5 top-7 rounded-full bg-white px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-wider text-void">Popüler</span>
+        <p class="font-mono text-[11px] uppercase tracking-widest text-violet">Pro</p>
+        <p class="mt-4 text-4xl font-bold"><span class="price" data-m="249" data-y="199">₺249</span><span class="text-sm font-normal text-white/40">/ay</span></p>
+        <p class="mt-1 text-xs text-white/50">Büyüyen ekipler · <span id="proNote">aylık ödeme</span></p>
+        <ul class="mt-6 flex-1 space-y-3 text-sm text-white/70">
+          <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>25 kullanıcı · sınırsız proje</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>AI rapor asistanı</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>Otomasyonlar</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>Öncelikli destek</li>
+        </ul>
+        <button class="mt-6 w-full rounded-xl bg-white py-3 text-sm font-semibold text-void transition hover:bg-white/90">14 gün dene</button>
+      </div>
+      <!-- enterprise -->
+      <div class="card reveal flex flex-col rounded-2xl p-7">
+        <p class="font-mono text-[11px] uppercase tracking-widest text-white/40">Enterprise</p>
+        <p class="mt-4 text-4xl font-bold">Özel</p>
+        <p class="mt-1 text-xs text-white/40">Sınırsız · kurumsal SLA</p>
+        <ul class="mt-6 flex-1 space-y-3 text-sm text-white/60">
+          <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>Sınırsız kullanıcı</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>SSO &amp; denetim</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>Özel entegrasyon</li>
+          <li class="flex items-center gap-2"><i data-lucide="check" class="h-4 w-4 text-cyan"></i>Hesap yöneticisi</li>
+        </ul>
+        <button class="mt-6 w-full rounded-xl border border-white/15 py-3 text-sm font-medium transition hover:bg-white/5">Satışla görüş</button>
+      </div>
+    </div>
+    <p class="mt-6 text-center font-mono text-[11px] uppercase tracking-widest text-white/30">Tüm fiyatlara KDV dahil değildir · Yıllık planda 2 ay hediye</p>
+  </div>
+</section>
+
+<!-- PREVIEW -->
+<section id="preview" class="border-t border-white/5 py-20 lg:py-28">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="font-mono text-[11px] uppercase tracking-[.25em] text-pink">Canlı önizleme</p>
+      <h2 class="mt-3 text-4xl font-bold tracking-tight lg:text-5xl">Dashboard'un <span class="grad-text">kendisi</span> konuşsun</h2>
+      <p class="mt-4 text-white/55">Aşağıdaki panel gerçek bir Pulse ekranından alınmıştır.</p>
+    </div>
+    <div class="mt-12 card overflow-hidden rounded-2xl">
+      <div class="flex items-center justify-between border-b border-white/10 px-5 py-3">
+        <div class="flex items-center gap-2"><span class="h-2.5 w-2.5 rounded-full bg-[#ff5f57]"></span><span class="h-2.5 w-2.5 rounded-full bg-[#febc2e]"></span><span class="h-2.5 w-2.5 rounded-full bg-[#28c840]"></span></div>
+        <div class="font-mono text-[10px] text-white/35">Q4 · Tüm ekipler</div>
+        <div class="flex -space-x-2"><span class="flex h-6 w-6 items-center justify-center rounded-full border border-void bg-violet/30 text-[9px]">AY</span><span class="flex h-6 w-6 items-center justify-center rounded-full border border-void bg-cyan/30 text-[9px]">MK</span><span class="flex h-6 w-6 items-center justify-center rounded-full border border-void bg-pink/30 text-[9px]">ZD</span></div>
+      </div>
+      <div class="grid gap-4 p-5 sm:grid-cols-4">
+        <div class="rounded-xl border border-white/10 bg-white/[.03] p-4"><p class="font-mono text-[9px] uppercase tracking-wider text-white/40">Toplam görev</p><p class="mt-1 text-2xl font-semibold" data-count="1290">0</p></div>
+        <div class="rounded-xl border border-white/10 bg-white/[.03] p-4"><p class="font-mono text-[9px] uppercase tracking-wider text-white/40">Tamamlanan</p><p class="mt-1 text-2xl font-semibold text-cyan" data-count="972">0</p></div>
+        <div class="rounded-xl border border-white/10 bg-white/[.03] p-4"><p class="font-mono text-[9px] uppercase tracking-wider text-white/40">Ort. teslim</p><p class="mt-1 text-2xl font-semibold" data-count="21"><span class="text-sm">gün</span></p></div>
+        <div class="rounded-xl border border-white/10 bg-white/[.03] p-4"><p class="font-mono text-[9px] uppercase tracking-wider text-white/40">Ekip verimi</p><p class="mt-1 text-2xl font-semibold text-violet" data-count="94"><span class="text-sm">%</span></p></div>
+        <div class="rounded-xl border border-white/10 bg-white/[.03] p-4 sm:col-span-2">
+          <div class="mb-2 flex items-center justify-between"><p class="text-xs text-white/60">Sprint burndown</p><span class="font-mono text-[9px] text-white/30">14 gün</span></div>
+          <svg viewBox="0 0 300 90" class="h-24 w-full" preserveAspectRatio="none">
+            <path d="M0,10 L300,80" stroke="#ffffff" stroke-opacity=".1" stroke-dasharray="4 4" fill="none"/>
+            <path d="M0,12 C50,20 70,40 110,42 C150,44 180,58 210,64 C250,72 280,74 300,78" fill="none" stroke="#7c5cff" stroke-width="2.5" class="dash-line"/>
+          </svg>
+        </div>
+        <div class="rounded-xl border border-white/10 bg-white/[.03] p-4 sm:col-span-2">
+          <div class="mb-2 flex items-center justify-between"><p class="text-xs text-white/60">Departman yükü</p><span class="font-mono text-[9px] text-white/30">bu hafta</span></div>
+          <div class="space-y-2.5">
+            <div><div class="mb-1 flex justify-between text-[10px] text-white/45"><span>Ürün</span><span>82%</span></div><div class="h-1.5 rounded-full bg-white/10"><div class="h-full w-[82%] rounded-full bg-violet"></div></div></div>
+            <div><div class="mb-1 flex justify-between text-[10px] text-white/45"><span>Tasarım</span><span>64%</span></div><div class="h-1.5 rounded-full bg-white/10"><div class="h-full w-[64%] rounded-full bg-cyan"></div></div></div>
+            <div><div class="mb-1 flex justify-between text-[10px] text-white/45"><span>Satış</span><span>48%</span></div><div class="h-1.5 rounded-full bg-white/10"><div class="h-full w-[48%] rounded-full bg-pink"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="border-t border-white/5 py-20">
+  <div class="mx-auto max-w-3xl px-4 sm:px-6">
+    <h2 class="text-center text-4xl font-bold tracking-tight">Sıkça sorulan <span class="grad-text">sorular</span></h2>
+    <div class="mt-10 space-y-3">
+      <div class="faq card rounded-xl">
+        <button class="flex w-full items-center justify-between gap-4 p-5 text-left"><span class="text-sm font-medium">Verilerim nerede saklanıyor?</span><i data-lucide="plus" class="faq-ico h-4 w-4 shrink-0 text-white/50 transition"></i></button>
+        <p class="faq-body hidden px-5 pb-5 text-sm leading-relaxed text-white/50">Verileriniz AB ve Türkiye'deki KVKK uyumlu veri merkezlerinde, şifreli olarak saklanır. Dilediğiniz an tümünü dışa aktarabilir veya silebilirsiniz.</p>
+      </div>
+      <div class="faq card rounded-xl">
+        <button class="flex w-full items-center justify-between gap-4 p-5 text-left"><span class="text-sm font-medium">Mevcut araçlarımızdan geçiş zor mu?</span><i data-lucide="plus" class="faq-ico h-4 w-4 shrink-0 text-white/50 transition"></i></button>
+        <p class="faq-body hidden px-5 pb-5 text-sm leading-relaxed text-white/50">Jira, Trello, Notion ve Asana'dan tek tıkla içe aktarma sunuyoruz. Pro planlarda geçiş sürecini ekibimiz sizinle birlikte yönetiyor.</p>
+      </div>
+      <div class="faq card rounded-xl">
+        <button class="flex w-full items-center justify-between gap-4 p-5 text-left"><span class="text-sm font-medium">Yıllık planda gerçekten 2 ay hediye mi?</span><i data-lucide="plus" class="faq-ico h-4 w-4 shrink-0 text-white/50 transition"></i></button>
+        <p class="faq-body hidden px-5 pb-5 text-sm leading-relaxed text-white/50">Evet. Yıllık faturalandırmada aylık fiyat %20 düşer — yani 12 ay için 10 ay ödersiniz. Fiyatlandırma bölümündeki anahtar bunu canlı hesaplar.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="relative overflow-hidden py-20 lg:py-28">
+  <div class="glow-bg"><div class="mesh left-1/2 top-1/2 h-80 w-[38rem] -translate-x-1/2 -translate-y-1/2 bg-violet/40"></div></div>
+  <div class="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
+    <h2 class="text-4xl font-bold tracking-tight lg:text-6xl">Bugün <span class="grad-text">netleşin</span>.</h2>
+    <p class="mx-auto mt-4 max-w-md text-white/55">14 gün ücretsiz, kredi kartı yok. Kurulum 2 dakika sürer.</p>
+    <form onsubmit="return ok(event)" class="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row">
+      <input type="email" required placeholder="iş@epostaniz.com" class="flex-1 rounded-xl border border-white/15 bg-white/5 px-4 py-3.5 text-sm text-white placeholder-white/30 outline-none transition focus:border-violet/50 focus:ring-2 focus:ring-violet/20" />
+      <button class="rounded-xl bg-white px-6 py-3.5 text-sm font-semibold text-void transition hover:bg-white/90">Başla</button>
+    </form>
+    <p class="mt-4 font-mono text-[10px] uppercase tracking-widest text-white/30">2.400+ ekip Pulse kullanıyor</p>
+  </div>
+</section>
+
+<footer class="border-t border-white/5">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 py-10">
+    <div class="flex flex-col items-center justify-between gap-5 sm:flex-row">
+      <div class="flex items-center gap-2"><span class="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet to-cyan"><i data-lucide="activity" class="h-3.5 w-3.5 text-white"></i></span><span class="font-semibold">Pulse</span></div>
+      <nav class="flex gap-6 text-xs text-white/45"><a href="#features" class="hover:text-white">Özellikler</a><a href="#pricing" class="hover:text-white">Fiyatlandırma</a><a href="#faq" class="hover:text-white">S.S.S</a><a href="#" class="hover:text-white">Gizlilik</a></nav>
+      <p class="font-mono text-[10px] uppercase tracking-widest text-white/25">© 2026 Pulse Labs</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+lucide.createIcons();
+document.getElementById('mBtn').onclick = () => document.getElementById('mMenu').classList.toggle('hidden');
+
+// tabs
+document.querySelectorAll('.tab-btn').forEach(btn => btn.onclick = () => {
+  document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('border-violet','text-white'); b.classList.add('border-transparent','text-white/50'); });
+  btn.classList.remove('border-transparent','text-white/50'); btn.classList.add('border-violet','text-white');
+  document.querySelectorAll('.tabpanel').forEach(p => p.classList.remove('active'));
+  document.getElementById(btn.dataset.tab).classList.add('active');
+});
+
+// pricing
+let period = 'monthly';
+function setPeriod(p){
+  period = p;
+  const m = document.getElementById('mAylik'), y = document.getElementById('mYillik');
+  const on = 'rounded-full bg-white px-5 py-2 text-sm font-semibold text-void transition';
+  const off = 'rounded-full px-5 py-2 text-sm font-medium text-white/60 transition hover:text-white';
+  m.className = p==='monthly'?on:off; y.className = p==='yearly'?on:off;
+  document.querySelectorAll('.price').forEach(el => {
+    const v = p==='monthly' ? el.dataset.m : el.dataset.y;
+    el.textContent = '₺' + Number(v).toLocaleString('tr-TR');
+  });
+  document.getElementById('proNote').textContent = p==='monthly' ? 'aylık ödeme' : 'yıllık ödeme · 2 ay hediye';
+}
+
+// faq
+document.querySelectorAll('.faq > button').forEach(b => b.onclick = () => {
+  const p = b.nextElementSibling, ico = b.querySelector('.faq-ico');
+  p.classList.toggle('hidden'); ico.style.transform = p.classList.contains('hidden') ? '' : 'rotate(45deg)';
+});
+
+// reveal
+const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && e.target.classList.add('in')), {threshold:.12});
+document.querySelectorAll('.reveal,section').forEach(el => { el.classList.add('reveal'); io.observe(el); });
+
+// counters
+const counted = new WeakSet();
+const cio = new IntersectionObserver(es => es.forEach(e => {
+  if(e.isIntersecting && !counted.has(e.target)){
+    counted.add(e.target);
+    const target = parseInt(e.target.dataset.count,10), suffix = e.target.querySelector('span')?.outerHTML || '';
+    let n = 0, start = performance.now();
+    const step = t => { const p = Math.min((t-start)/1200,1); n = Math.round(target * (1-Math.pow(1-p,3))); e.target.innerHTML = n.toLocaleString('tr-TR') + suffix; if(p<1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+}), {threshold:.5});
+document.querySelectorAll('[data-count]').forEach(el => cio.observe(el));
+
+// cursor spotlight
+const hero = document.getElementById('top');
+hero.addEventListener('mousemove', e => {
+  const r = hero.getBoundingClientRect();
+  hero.style.background = `radial-gradient(600px circle at ${e.clientX-r.left}px ${e.clientY-r.top}px, rgba(124,92,255,.10), transparent 40%)`;
+});
+
+function ok(e){ e.preventDefault(); alert('Teşekkürler! Davet bağlantısı e-posta adresinize gönderildi.'); e.target.reset(); return false; }
+setPeriod('monthly');
+</script>
+</body>
+</html>
